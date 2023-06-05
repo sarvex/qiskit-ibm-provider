@@ -32,7 +32,7 @@ class IBMTestCase(BaseQiskitTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.log = logging.getLogger(cls.__name__)
-        filename = "%s.log" % os.path.splitext(inspect.getfile(cls))[0]
+        filename = f"{os.path.splitext(inspect.getfile(cls))[0]}.log"
         setup_test_logging(cls.log, filename)
         cls._set_logging_level(logging.getLogger(QISKIT_IBM_PROVIDER_LOGGER_NAME))
 

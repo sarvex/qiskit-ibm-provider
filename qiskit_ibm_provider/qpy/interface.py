@@ -132,10 +132,7 @@ def dump(  # type: ignore[no-untyped-def]
     if not isinstance(programs, Iterable):
         programs = [programs]
 
-    program_types = set()
-    for program in programs:
-        program_types.add(type(program))
-
+    program_types = {type(program) for program in programs}
     if len(program_types) > 1:
         raise QpyError(
             "Input programs contain multiple data types. "
@@ -249,11 +246,7 @@ def load(  # type: ignore[no-untyped-def]
         )
     ):
         warnings.warn(
-            "The qiskit version used to generate the provided QPY "
-            "file, %s, is newer than the current qiskit version %s. "
-            "This may result in an error if the QPY file uses "
-            "instructions not present in this current qiskit "
-            "version" % (".".join([str(x) for x in qiskit_version]), __version__)
+            f'The qiskit version used to generate the provided QPY file, {".".join([str(x) for x in qiskit_version])}, is newer than the current qiskit version {__version__}. This may result in an error if the QPY file uses instructions not present in this current qiskit version'
         )
 
     if data.qpy_version < 5:
@@ -268,13 +261,11 @@ def load(  # type: ignore[no-untyped-def]
     else:
         raise TypeError(f"Invalid payload format data kind '{type_key}'.")
 
-    programs = []
-    for _ in range(data.num_programs):
-        programs.append(
-            loader(  # type: ignore[no-untyped-call]
-                file_obj,
-                data.qpy_version,
-                metadata_deserializer=metadata_deserializer,
-            )
+    return [
+        loader(  # type: ignore[no-untyped-call]
+            file_obj,
+            data.qpy_version,
+            metadata_deserializer=metadata_deserializer,
         )
-    return programs
+        for _ in range(data.num_programs)
+    ]

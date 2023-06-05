@@ -44,8 +44,7 @@ class TestLogger(IBMTestCase):
             self.assertEqual(
                 logger.level,
                 default_level_not_set,
-                "The logger level was set to {}, but it should "
-                "be {}".format(logger.level, default_level_not_set),
+                f"The logger level was set to {logger.level}, but it should be {default_level_not_set}",
             )
 
     def test_empty_log_level(self):
@@ -62,8 +61,7 @@ class TestLogger(IBMTestCase):
             self.assertEqual(
                 logger.level,
                 default_level_not_set,
-                "The logger level was set to {}, but it should "
-                "be {}.".format(logger.level, default_level_not_set),
+                f"The logger level was set to {logger.level}, but it should be {default_level_not_set}.",
             )
 
     def test_invalid_log_level(self):
@@ -79,14 +77,13 @@ class TestLogger(IBMTestCase):
         for invalid_log_level in invalid_log_levels:
             with self.subTest(invalid_log_level=invalid_log_level):
                 with mock.patch.dict(
-                    "os.environ", {QISKIT_IBM_PROVIDER_LOG_LEVEL: invalid_log_level}
-                ):
+                                "os.environ", {QISKIT_IBM_PROVIDER_LOG_LEVEL: invalid_log_level}
+                            ):
                     setup_logger(logger)
                     self.assertEqual(
                         logger.level,
                         default_level_invalid,
-                        "The logger level was set to {}, but it should "
-                        "be {}.".format(logger.level, default_level_invalid),
+                        f"The logger level was set to {logger.level}, but it should be {default_level_invalid}.",
                     )
 
     def test_valid_log_levels_mixed_casing(self):
@@ -103,14 +100,13 @@ class TestLogger(IBMTestCase):
         for level_name, level_value in all_valid_log_levels.items():
             with self.subTest(level_name=level_name):
                 with mock.patch.dict(
-                    "os.environ", {QISKIT_IBM_PROVIDER_LOG_LEVEL: level_name}
-                ):
+                                "os.environ", {QISKIT_IBM_PROVIDER_LOG_LEVEL: level_name}
+                            ):
                     setup_logger(logger)
                     self.assertEqual(
                         logger.level,
                         level_value,
-                        "The logger level was set to {}, but it should "
-                        "be {}.".format(logger.level, level_value),
+                        f"The logger level was set to {logger.level}, but it should be {level_value}.",
                     )
 
     # TODO: NamedTemporaryFiles do not support name in Windows
@@ -132,8 +128,7 @@ class TestLogger(IBMTestCase):
                 self.assertEqual(
                     logger.level,
                     log_level_error[1],
-                    "The logger level was set to {}, but it should "
-                    "be {}.".format(logger.level, log_level_error[1]),
+                    f"The logger level was set to {logger.level}, but it should be {log_level_error[1]}.",
                 )
 
                 # Assert the file handler was created.
@@ -144,8 +139,7 @@ class TestLogger(IBMTestCase):
                 self.assertEqual(
                     len(logger.handlers),
                     1,
-                    "Many handlers were setup {}, but it should have only "
-                    "been one.".format(logger.handlers),
+                    f"Many handlers were setup {logger.handlers}, but it should have only been one.",
                 )
 
                 # Note that only messages >= `ERROR` will be logged.
@@ -163,7 +157,7 @@ class TestLogger(IBMTestCase):
                 log_file_name = os.environ[QISKIT_IBM_PROVIDER_LOG_FILE]
                 self.assertTrue(
                     os.path.exists(log_file_name),
-                    "The file {} does not exist.".format(log_file_name),
+                    f"The file {log_file_name} does not exist.",
                 )
 
                 # Assert the messages were logged.
@@ -182,15 +176,11 @@ class TestLogger(IBMTestCase):
                                 self.assertIn(
                                     substring,
                                     content_as_str,
-                                    'The substring "{}" was not found in the file {}.'.format(
-                                        substring, temp_log_file.name
-                                    ),
+                                    f'The substring "{substring}" was not found in the file {temp_log_file.name}.',
                                 )
                             else:
                                 self.assertNotIn(
                                     substring,
                                     content_as_str,
-                                    'The substring "{}" was found in the file {}.'.format(
-                                        "debug message", temp_log_file.name
-                                    ),
+                                    f'The substring "debug message" was found in the file {temp_log_file.name}.',
                                 )

@@ -37,8 +37,9 @@ def qubits_tab(backend: Union[IBMBackend, FakeBackend]) -> wid.VBox:
     header_html = header_html.format(key="last_update_date", value=date_str)
     update_date_widget = wid.HTML(value=header_html)
 
-    qubit_html = "<table>"
-    qubit_html += """<style>
+    qubit_html = (
+        "<table>"
+        + """<style>
 table {
     width: auto !important;
     font-family:IBM Plex Sans, Arial, sans-serif !important;
@@ -51,14 +52,14 @@ th, td {
 
 tr:nth-child(even) {background-color: #f6f6f6 !important;}
 </style>"""
-
+    )
     qubit_html += "<tr><th></th><th>Frequency</th><th>T1</th><th>T2</th>"
     qubit_footer = "</table>"
 
     gate_error_title = ""
 
     for index, qubit_data in enumerate(props.qubits):
-        name = "Q%s" % index
+        name = f"Q{index}"
         gate_data = [gate for gate in props.gates if gate.qubits == [index]]
 
         cali_data = dict.fromkeys(["T1", "T2", "frequency", "readout_error"], "Unknown")
@@ -66,7 +67,7 @@ tr:nth-child(even) {background-color: #f6f6f6 !important;}
             if nduv.name == "readout_error":
                 cali_data[nduv.name] = str(round(nduv.value * 100, 3))
             elif nduv.name in cali_data:
-                cali_data[nduv.name] = str(round(nduv.value, 3)) + " " + nduv.unit
+                cali_data[nduv.name] = f"{str(round(nduv.value, 3))} {nduv.unit}"
 
         gate_names = []
         gate_error = []
@@ -81,7 +82,7 @@ tr:nth-child(even) {background-color: #f6f6f6 !important;}
         if not gate_error_title:
             for gname in gate_names:
                 gate_error_title += f"<th>{gname}</th>"
-            qubit_html += gate_error_title + "<th>Readout error</th></tr>"
+            qubit_html += f"{gate_error_title}<th>Readout error</th></tr>"
 
         qubit_html += f"<tr><td><font style='font-weight:bold'>{name}</font></td>"
         qubit_html += (
@@ -96,7 +97,7 @@ tr:nth-child(even) {background-color: #f6f6f6 !important;}
 
     qubit_widget = wid.HTML(value=qubit_html, layout=wid.Layout(width="100%"))
 
-    out = wid.VBox(
+    return wid.VBox(
         children=[update_date_widget, qubit_widget],
         layout=wid.Layout(
             max_height="500px",
@@ -104,5 +105,3 @@ tr:nth-child(even) {background-color: #f6f6f6 !important;}
             overflow="hidden scroll",
         ),
     )
-
-    return out

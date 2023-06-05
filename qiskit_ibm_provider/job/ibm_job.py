@@ -64,7 +64,7 @@ class IBMJob(Job, ABC):
         self._data = {}
         for key, value in kwargs.items():
             # Append suffix to key to avoid conflicts.
-            self._data[key + "_"] = value
+            self._data[f"{key}_"] = value
 
     def properties(self) -> Optional[BackendProperties]:
         """Return the backend properties for this job.
@@ -243,7 +243,7 @@ class IBMJob(Job, ABC):
         try:
             return self._data[name]
         except KeyError:
-            raise AttributeError("Attribute {} is not defined.".format(name)) from None
+            raise AttributeError(f"Attribute {name} is not defined.") from None
 
     def _get_qobj(self) -> Optional[Union[QasmQobj, PulseQobj]]:
         """Return the Qobj for this job.
@@ -254,4 +254,4 @@ class IBMJob(Job, ABC):
         pass
 
     def __repr__(self) -> str:
-        return "<{}('{}')>".format(self.__class__.__name__, self.job_id())
+        return f"<{self.__class__.__name__}('{self.job_id()}')>"

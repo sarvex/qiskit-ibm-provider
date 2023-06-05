@@ -12,6 +12,7 @@
 
 """Tests for the AuthClient and VersionClient proxy support."""
 
+
 import subprocess
 import urllib
 
@@ -30,9 +31,9 @@ from ..ibm_test_case import IBMTestCase
 
 ADDRESS = "127.0.0.1"
 PORT = 8085
-VALID_PROXIES = {"https": "http://{}:{}".format(ADDRESS, PORT)}
-INVALID_PORT_PROXIES = {"https": "http://{}:{}".format(ADDRESS, "6666")}
-INVALID_ADDRESS_PROXIES = {"https": "http://{}:{}".format("invalid", PORT)}
+VALID_PROXIES = {"https": f"http://{ADDRESS}:{PORT}"}
+INVALID_PORT_PROXIES = {"https": f"http://{ADDRESS}:6666"}
+INVALID_ADDRESS_PROXIES = {"https": f"http://invalid:{PORT}"}
 
 
 class TestProxies(IBMTestCase):
@@ -51,7 +52,7 @@ class TestProxies(IBMTestCase):
         """Initial test setup."""
         super().setUp()
         # launch a mock server.
-        command = ["pproxy", "-v", "-l", "http://{}:{}".format(ADDRESS, PORT)]
+        command = ["pproxy", "-v", "-l", f"http://{ADDRESS}:{PORT}"]
         self.proxy_process = subprocess.Popen(command, stdout=subprocess.PIPE)
 
     def tearDown(self):
@@ -172,9 +173,9 @@ class TestProxies(IBMTestCase):
     def test_proxy_urls(self):
         """Test different forms of the proxy urls."""
         test_urls = [
-            "http://{}:{}".format(ADDRESS, PORT),
-            "//{}:{}".format(ADDRESS, PORT),
-            "http://user:123@{}:{}".format(ADDRESS, PORT),
+            f"http://{ADDRESS}:{PORT}",
+            f"//{ADDRESS}:{PORT}",
+            f"http://user:123@{ADDRESS}:{PORT}",
         ]
         for proxy_url in test_urls:
             with self.subTest(proxy_url=proxy_url):
@@ -193,4 +194,4 @@ def pproxy_desired_access_log_line(url):
     """Return a desired pproxy log entry given a url."""
     qe_url_parts = urllib.parse.urlparse(url)
     protocol_port = "443" if qe_url_parts.scheme == "https" else "80"
-    return "{}:{}".format(qe_url_parts.hostname, protocol_port)
+    return f"{qe_url_parts.hostname}:{protocol_port}"

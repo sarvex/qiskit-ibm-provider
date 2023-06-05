@@ -48,20 +48,20 @@ def _title_builder(sel_dict: dict) -> str:
     Returns:
         HTML string for title.
     """
-    if "day" not in sel_dict.keys():
-        title_str = "Jobs in {mon} {yr} ({num})".format(
-            mon=MONTH_NAMES[sel_dict["month"]],
-            yr=sel_dict["year"],
-            num=len(sel_dict["jobs"]),
-        )
-    else:
+    if "day" in sel_dict:
         title_str = "Jobs on {day} {mon} {yr} ({num})".format(
             day=sel_dict["day"],
             mon=MONTH_NAMES[sel_dict["month"]],
             yr=sel_dict["year"],
             num=len(sel_dict["jobs"]),
         )
-    return "<h4>{}</h4>".format(title_str)
+    else:
+        title_str = "Jobs in {mon} {yr} ({num})".format(
+            mon=MONTH_NAMES[sel_dict["month"]],
+            yr=sel_dict["year"],
+            num=len(sel_dict["jobs"]),
+        )
+    return f"<h4>{title_str}</h4>"
 
 
 def _job_table_builder(sel_dict: dict) -> str:
@@ -73,8 +73,9 @@ def _job_table_builder(sel_dict: dict) -> str:
     Returns:
         HTML string for job table.
     """
-    table_html = "<table>"
-    table_html += """<style>
+    table_html = (
+        "<table>"
+        + """<style>
 table {
     width: auto !important;
     font-family:IBM Plex Sans, Arial, sans-serif !important;
@@ -87,13 +88,13 @@ th, td {
 
 tr:nth-child(even) {background-color: #f6f6f6 !important;}
 </style>"""
-
+    )
     table_html += "<tr><th>Date</th><th>Job ID / Name</th><th>Status</th></tr>"
     table_footer = "</table>"
 
+    _temp_str = "<td>{time}</td><td>{jid}</td><td>{status}</td></tr>"
     for jdata in sel_dict["jobs"]:
         date_str = jdata[0].strftime("%H:%M %Z [%d/%b]")
-        _temp_str = "<td>{time}</td><td>{jid}</td><td>{status}</td></tr>"
         # job has a name
         if jdata[2]:
             name = "{name} [{jid}]".format(name=jdata[2], jid=jdata[1])
@@ -216,21 +217,21 @@ def _job_summary(
 
                 if _day_num[-1] == "1":
                     if _day_num[0] != "1" and len(_day_num) == 1:
-                        _day_num = _day_num + "st"
+                        _day_num = f"{_day_num}st"
                     else:
-                        _day_num = _day_num + "th"
+                        _day_num = f"{_day_num}th"
                 elif _day_num[-1] == "2":
                     if _day_num[0] != "1" and len(_day_num) == 1:
-                        _day_num = _day_num + "nd"
+                        _day_num = f"{_day_num}nd"
                     else:
-                        _day_num = _day_num + "th"
+                        _day_num = f"{_day_num}th"
                 elif _day_num[-1] == "3":
                     if _day_num[0] != "1" and len(_day_num) == 1:
-                        _day_num = _day_num + "rd"
+                        _day_num = f"{_day_num}rd"
                     else:
-                        _day_num = _day_num + "th"
+                        _day_num = f"{_day_num}th"
                 else:
-                    _day_num = _day_num + "th"
+                    _day_num = f"{_day_num}th"
 
                 labels.append(_day_num)
                 parents.append(month_label)
@@ -319,7 +320,7 @@ def jobs_tab(backend: Union[IBMBackend, FakeBackend], **kwargs: Any) -> wid.HBox
         layout=wid.Layout(width="60%", overflow="hidden hidden"),
     )
 
-    out = wid.HBox(
-        children=[left, right], layout=wid.Layout(max_height="500px", margin="10px")
+    return wid.HBox(
+        children=[left, right],
+        layout=wid.Layout(max_height="500px", margin="10px"),
     )
-    return out

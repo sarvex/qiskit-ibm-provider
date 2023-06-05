@@ -233,9 +233,7 @@ class TestWebsocketIntegration(IBMTestCase):
         job = self.sim_backend.run(self.bell, shots=1)
 
         invalid_proxy = {
-            "https": "http://{}:{}".format(
-                MockProxyServer.PROXY_IP_ADDRESS, MockProxyServer.INVALID_PROXY_PORT
-            )
+            "https": f"http://{MockProxyServer.PROXY_IP_ADDRESS}:{MockProxyServer.INVALID_PROXY_PORT}"
         }
         with use_proxies(
             self.dependencies.provider.backend._default_hgp, invalid_proxy

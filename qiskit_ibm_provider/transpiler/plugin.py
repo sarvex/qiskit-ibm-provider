@@ -48,8 +48,7 @@ class IBMTranslationPlugin(PassManagerStagePlugin):
         )
 
         plugin_passes = []
-        instruction_durations = pass_manager_config.instruction_durations
-        if instruction_durations:
+        if instruction_durations := pass_manager_config.instruction_durations:
             plugin_passes.append(ConvertIdToDelay(instruction_durations))
 
         return PassManager(plugin_passes) + translator_pm

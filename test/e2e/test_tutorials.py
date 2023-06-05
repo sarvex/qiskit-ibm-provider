@@ -61,9 +61,9 @@ class TutorialsTestCaseMeta(type):
 
         for filename in tutorials:
             # Add a new "test_file_name_ipynb()" function to the test case.
-            test_name = "test_%s" % to_python_identifier(filename)
+            test_name = f"test_{to_python_identifier(filename)}"
             dict_[test_name] = create_test(filename)
-            dict_[test_name].__doc__ = 'Test tutorial "%s"' % filename
+            dict_[test_name].__doc__ = f'Test tutorial "{filename}"'
         return type.__new__(cls, name, bases, dict_)
 
 

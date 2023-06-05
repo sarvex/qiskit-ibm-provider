@@ -199,22 +199,21 @@ class IBMProvider(Provider):
                     name,
                 )
             account = AccountManager.get(name=name)
+        elif token:
+            account = Account(
+                channel="ibm_quantum",
+                token=token,
+                url=url,
+                instance=instance,
+                proxies=proxies,
+                verify=verify_,
+            )
         else:
-            if token:
-                account = Account(
-                    channel="ibm_quantum",
-                    token=token,
-                    url=url,
-                    instance=instance,
-                    proxies=proxies,
-                    verify=verify_,
+            if url:
+                logger.warning(
+                    "Loading default ibm_quantum account. Input 'url' is ignored."
                 )
-            else:
-                if url:
-                    logger.warning(
-                        "Loading default ibm_quantum account. Input 'url' is ignored."
-                    )
-                account = AccountManager.get(channel="ibm_quantum")
+            account = AccountManager.get(channel="ibm_quantum")
 
         if account is None:
             account = AccountManager.get()
@@ -288,8 +287,7 @@ class IBMProvider(Provider):
             open_key, open_val = hgps.popitem(last=False)
             hgps[open_key] = open_val
 
-        default_hgp = self._account.instance
-        if default_hgp:
+        if default_hgp := self._account.instance:
             if default_hgp in hgps:
                 # Move user selected hgp to front of the list
                 hgps.move_to_end(default_hgp, last=False)
@@ -319,10 +317,7 @@ class IBMProvider(Provider):
         # Check the URL is a valid authentication URL.
         if not version_info["new_api"] or "api-auth" not in version_info:
             raise IBMInputValueError(
-                "The URL specified ({}) is not an IBM Quantum authentication URL. "
-                "Valid authentication URL: {}.".format(
-                    client_params.url, QISKIT_IBM_API_URL
-                )
+                f"The URL specified ({client_params.url}) is not an IBM Quantum authentication URL. Valid authentication URL: {QISKIT_IBM_API_URL}."
             )
         return AuthClient(client_params)
 
@@ -395,8 +390,7 @@ class IBMProvider(Provider):
         Returns:
             A list of `HubGroupProject` instancess.
         """
-        hgps = [hgp for key, hgp in self._hgps.items()]
-        return hgps
+        return [hgp for key, hgp in self._hgps.items()]
 
     def _initialize_services(self) -> None:
         """Initialize all services."""
@@ -663,4 +657,4 @@ class IBMProvider(Provider):
         return backends[0]
 
     def __repr__(self) -> str:
-        return "<{}>".format(self.__class__.__name__)
+        return f"<{self.__class__.__name__}>"

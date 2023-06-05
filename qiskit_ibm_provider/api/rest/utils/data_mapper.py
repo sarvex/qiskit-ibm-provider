@@ -122,11 +122,7 @@ def dict_to_identifier(data: Dict[str, Any], mapper: Optional[dict] = None) -> N
     """
     mapper = mapper or {}
     for key in list(data.keys()):
-        if key in mapper:
-            new_key = mapper[key]
-        else:
-            new_key = to_python_identifier(key)
-
+        new_key = mapper[key] if key in mapper else to_python_identifier(key)
         data[new_key] = data.pop(key)
 
 

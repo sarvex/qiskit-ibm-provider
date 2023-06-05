@@ -58,16 +58,13 @@ class AuthClient(BaseClient):
         self.auth_api.session.auth = QuantumAuth(access_token=self.access_token)
         self._service_urls = self.user_urls()
 
-        # Create the api server client, using the access token.
-        base_api = Api(
+        return Api(
             RetrySession(
                 self._service_urls["http"],
                 auth=QuantumAuth(access_token=self.access_token),
                 **request_kwargs,
             )
         )
-
-        return base_api
 
     def _request_access_token(self) -> str:
         """Request a new access token from the API authentication service.

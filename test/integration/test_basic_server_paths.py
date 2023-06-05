@@ -93,12 +93,11 @@ class TestBasicServerPaths(IBMTestCase):
         transpiled = transpile(circs, backend)
         for _ in range(max_retry):
             try:
-                job = backend.run(transpiled)
-                return job
+                return backend.run(transpiled)
             except IBMBackendJobLimitError as err:
                 limit_error = err
                 time.sleep(1)
 
         return self.fail(
-            "Unable to submit job after {} retries: {}".format(max_retry, limit_error)
+            f"Unable to submit job after {max_retry} retries: {limit_error}"
         )

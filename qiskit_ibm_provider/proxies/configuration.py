@@ -104,9 +104,9 @@ class ProxyConfiguration:
             proxy_keys = [
                 ws_url,
                 "wss",
-                "https://" + url_parts.hostname,
+                f"https://{url_parts.hostname}",
                 "https",
-                "all://" + url_parts.hostname,
+                f"all://{url_parts.hostname}",
                 "all",
             ]
             for key in proxy_keys:

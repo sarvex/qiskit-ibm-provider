@@ -95,7 +95,7 @@ def _read_registers_v4(file_obj, num_registers):  # type: ignore[no-untyped-def]
             )
         )
         name = file_obj.read(data.name_size).decode("utf8")
-        REGISTER_ARRAY_PACK = "!%sq" % data.size
+        REGISTER_ARRAY_PACK = f"!{data.size}q"
         bit_indices_raw = file_obj.read(struct.calcsize(REGISTER_ARRAY_PACK))
         bit_indices = list(struct.unpack(REGISTER_ARRAY_PACK, bit_indices_raw))
         if data.type.decode("utf8") == "q":
@@ -115,7 +115,7 @@ def _read_registers(file_obj, num_registers):  # type: ignore[no-untyped-def]
             )
         )
         name = file_obj.read(data.name_size).decode("utf8")
-        REGISTER_ARRAY_PACK = "!%sI" % data.size
+        REGISTER_ARRAY_PACK = f"!{data.size}I"
         bit_indices_raw = file_obj.read(struct.calcsize(REGISTER_ARRAY_PACK))
         bit_indices = list(struct.unpack(REGISTER_ARRAY_PACK, bit_indices_raw))
         if data.type.decode("utf8") == "q":
@@ -129,12 +129,12 @@ def _loads_instruction_parameter(  # type: ignore[no-untyped-def]
     type_key, data_bytes, version, vectors, registers, circuit
 ):
     if type_key == type_keys.Program.CIRCUIT:
-        param = common.data_from_binary(data_bytes, read_circuit, version=version)
+        return common.data_from_binary(data_bytes, read_circuit, version=version)
     elif type_key == type_keys.Container.RANGE:
         data = formats.RANGE._make(struct.unpack(formats.RANGE_PACK, data_bytes))
-        param = range(data.start, data.stop, data.step)
+        return range(data.start, data.stop, data.step)
     elif type_key == type_keys.Container.TUPLE:
-        param = tuple(
+        return tuple(
             common.sequence_from_binary(
                 data_bytes,
                 _loads_instruction_parameter,
@@ -146,18 +146,16 @@ def _loads_instruction_parameter(  # type: ignore[no-untyped-def]
         )
     elif type_key == type_keys.Value.INTEGER:
         # TODO This uses little endian. Should be fixed in the next QPY version.
-        param = struct.unpack("<q", data_bytes)[0]
+        return struct.unpack("<q", data_bytes)[0]
     elif type_key == type_keys.Value.FLOAT:
         # TODO This uses little endian. Should be fixed in the next QPY version.
-        param = struct.unpack("<d", data_bytes)[0]
+        return struct.unpack("<d", data_bytes)[0]
     elif type_key == type_keys.Value.REGISTER:
-        param = _loads_register_param(
+        return _loads_register_param(
             data_bytes.decode(common.ENCODE), circuit, registers
         )
     else:
-        param = value.loads_value(type_key, data_bytes, version, vectors)
-
-    return param
+        return value.loads_value(type_key, data_bytes, version, vectors)
 
 
 def _loads_register_param(data_bytes, circuit, registers):  # type: ignore[no-untyped-def]
@@ -203,12 +201,6 @@ def _read_instruction(  # type: ignore[no-untyped-def]
     if circuit is not None:
         qubit_indices = dict(enumerate(circuit.qubits))
         clbit_indices = dict(enumerate(circuit.clbits))
-    else:
-        qubit_indices = {}
-        clbit_indices = {}
-
-    # Load Arguments
-    if circuit is not None:
         for _qarg in range(instruction.num_qargs):
             qarg = formats.CIRCUIT_INSTRUCTION_ARG._make(
                 struct.unpack(
@@ -229,6 +221,10 @@ def _read_instruction(  # type: ignore[no-untyped-def]
             if carg.type.decode(common.ENCODE) == "q":
                 raise TypeError("Invalid input qarg after all qargs")
             cargs.append(clbit_indices[carg.size])
+
+    else:
+        qubit_indices = {}
+        clbit_indices = {}
 
     # Load Parameters
     for _param in range(instruction.num_parameters):
@@ -272,7 +268,7 @@ def _read_instruction(  # type: ignore[no-untyped-def]
     elif hasattr(controlflow, gate_name):
         gate_class = getattr(controlflow, gate_name)
     else:
-        raise AttributeError("Invalid instruction type: %s" % gate_name)
+        raise AttributeError(f"Invalid instruction type: {gate_name}")
 
     if gate_name in {"IfElseOp", "WhileLoopOp"}:
         gate = gate_class(condition_tuple, *params)
@@ -368,7 +364,7 @@ def _parse_custom_operation(  # type: ignore[no-untyped-def]
     if type_key == type_keys.CircuitInstruction.PAULI_EVOL_GATE:
         return definition
 
-    raise ValueError("Invalid custom instruction type '%s'" % type_str)
+    raise ValueError(f"Invalid custom instruction type '{type_str}'")
 
 
 def _read_pauli_evolution_gate(file_obj, version, vectors):  # type: ignore[no-untyped-def]
@@ -407,8 +403,7 @@ def _read_pauli_evolution_gate(file_obj, version, vectors):  # type: ignore[no-u
     )
     synth_data = json.loads(file_obj.read(pauli_evolution_def.synth_method_size))
     synthesis = getattr(evo_synth, synth_data["class"])(**synth_data["settings"])
-    return_gate = library.PauliEvolutionGate(pauli_op, time=time, synthesis=synthesis)
-    return return_gate
+    return library.PauliEvolutionGate(pauli_op, time=time, synthesis=synthesis)
 
 
 def _read_custom_operations(file_obj, version, vectors):  # type: ignore[no-untyped-def]
@@ -573,7 +568,7 @@ def _write_instruction(  # type: ignore[no-untyped-def]
         gate_class_name = instruction.operation.name
 
     elif isinstance(instruction.operation, library.PauliEvolutionGate):
-        gate_class_name = r"###PauliEvolutionGate_" + str(uuid.uuid4())
+        gate_class_name = f"###PauliEvolutionGate_{str(uuid.uuid4())}"
         custom_operations[gate_class_name] = instruction.operation
         custom_operations_list.append(gate_class_name)
 
@@ -588,8 +583,7 @@ def _write_instruction(  # type: ignore[no-untyped-def]
         condition_value = int(instruction.operation.condition[1])
 
     gate_class_name = gate_class_name.encode(common.ENCODE)
-    label = getattr(instruction.operation, "label")
-    if label:
+    if label := getattr(instruction.operation, "label"):
         label_raw = label.encode(common.ENCODE)
     else:
         label_raw = b""
@@ -784,11 +778,11 @@ def _write_calibrations(file_obj, calibrations, metadata_serializer):  # type: i
 def _write_registers(file_obj, in_circ_regs, full_bits):  # type: ignore[no-untyped-def]
     bitmap = {bit: index for index, bit in enumerate(full_bits)}
 
-    out_circ_regs = set()
-    for bit in full_bits:
-        if bit._register is not None and bit._register not in in_circ_regs:
-            out_circ_regs.add(bit._register)
-
+    out_circ_regs = {
+        bit._register
+        for bit in full_bits
+        if bit._register is not None and bit._register not in in_circ_regs
+    }
     for regs, is_in_circuit in [(in_circ_regs, True), (out_circ_regs, False)]:
         for reg in regs:
             standalone = all(bit._register is reg for bit in reg)
@@ -805,16 +799,14 @@ def _write_registers(file_obj, in_circ_regs, full_bits):  # type: ignore[no-unty
                 )
             )
             file_obj.write(reg_name)
-            REGISTER_ARRAY_PACK = "!%sq" % reg.size
-            bit_indices = []
-            for bit in reg:
-                bit_indices.append(bitmap.get(bit, -1))
+            REGISTER_ARRAY_PACK = f"!{reg.size}q"
+            bit_indices = [bitmap.get(bit, -1) for bit in reg]
             file_obj.write(struct.pack(REGISTER_ARRAY_PACK, *bit_indices))
 
     return len(in_circ_regs) + len(out_circ_regs)
 
 
-def write_circuit(file_obj, circuit, metadata_serializer=None):  # type: ignore[no-untyped-def]
+def write_circuit(file_obj, circuit, metadata_serializer=None):    # type: ignore[no-untyped-def]
     """Write a single QuantumCircuit object in the file like object.
 
     Args:
@@ -859,9 +851,10 @@ def write_circuit(file_obj, circuit, metadata_serializer=None):  # type: ignore[
     file_obj.write(registers_raw)
     instruction_buffer = io.BytesIO()
     custom_operations = {}
-    index_map = {}
-    index_map["q"] = {bit: index for index, bit in enumerate(circuit.qubits)}
-    index_map["c"] = {bit: index for index, bit in enumerate(circuit.clbits)}
+    index_map = {
+        "q": {bit: index for index, bit in enumerate(circuit.qubits)},
+        "c": {bit: index for index, bit in enumerate(circuit.clbits)},
+    }
     for instruction in circuit.data:
         _write_instruction(
             instruction_buffer, instruction, custom_operations, index_map

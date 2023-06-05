@@ -233,14 +233,13 @@ class PadDynamicalDecoupling(BlockBasePadder):
                 mid = 1 / num_pulses
                 end = mid / 2
                 self._spacings.append([end] + [mid] * (num_pulses - 1) + [end])  # type: ignore
-            else:
-                if sum(self._spacings[seq_idx]) != 1 or any(  # type: ignore
+            elif sum(self._spacings[seq_idx]) != 1 or any(  # type: ignore
                     a < 0 for a in self._spacings[seq_idx]  # type: ignore
                 ):
-                    raise TranspilerError(
-                        "The spacings must be given in terms of fractions "
-                        "of the slack period and sum to 1."
-                    )
+                raise TranspilerError(
+                    "The spacings must be given in terms of fractions "
+                    "of the slack period and sum to 1."
+                )
 
             # Check if DD sequence is identity
             if num_pulses != 1:

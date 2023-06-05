@@ -48,7 +48,7 @@ class Job(RestAdapterBase):
             url_prefix: Prefix to use in the URL.
         """
         self.job_id = job_id
-        super().__init__(session, "{}/Jobs/{}".format(url_prefix, job_id))
+        super().__init__(session, f"{url_prefix}/Jobs/{job_id}")
 
     def get(self) -> Dict[str, Any]:
         """Return job information.
@@ -126,5 +126,4 @@ class Job(RestAdapterBase):
             JSON response.
         """
         logger.debug("Downloading from object storage.")
-        response = self.session.get(url, bare=True, timeout=600).json()
-        return response
+        return self.session.get(url, bare=True, timeout=600).json()

@@ -30,8 +30,4 @@ class JobTestCase(IBMTestCase):
             time.sleep(wait)
             waited += wait
             if waited > timeout:
-                self.fail(
-                    msg="The JOB is still initializing after timeout ({}s)".format(
-                        timeout
-                    )
-                )
+                self.fail(msg=f"The JOB is still initializing after timeout ({timeout}s)")

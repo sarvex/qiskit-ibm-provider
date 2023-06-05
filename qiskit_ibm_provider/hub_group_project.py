@@ -77,8 +77,7 @@ class HubGroupProject:
             A dict of the remote backend instances, keyed by backend name.
         """
         ret: OrderedDict[str, Any] = OrderedDict()
-        backends = self._provider._runtime_client.list_backends(self.name)
-        if backends:
+        if backends := self._provider._runtime_client.list_backends(self.name):
             for backend in backends:
                 ret[backend] = None
         return ret
@@ -97,12 +96,10 @@ class HubGroupProject:
         return f"{self._hub}/{self._group}/{self._project}"
 
     def __repr__(self) -> str:
-        hgp_info = "hub='{}', group='{}', project='{}'".format(
-            self._hub, self._group, self._project
+        hgp_info = (
+            f"hub='{self._hub}', group='{self._group}', project='{self._project}'"
         )
-        return "<{}({})>".format(self.__class__.__name__, hgp_info)
+        return f"<{self.__class__.__name__}({hgp_info})>"
 
     def __eq__(self, other: Any) -> bool:
-        if not isinstance(other, HubGroupProject):
-            return False
-        return self.name == other.name
+        return self.name == other.name if isinstance(other, HubGroupProject) else False

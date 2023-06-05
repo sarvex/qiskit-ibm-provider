@@ -228,13 +228,16 @@ class TestIBMJob(IBMTestCase):
     def test_retrieve_job_uses_appropriate_backend(self):
         """Test that retrieved jobs come from their appropriate backend."""
         backend_1 = self.real_device_backend
-        # Get a second backend.
-        backend_2 = None
         provider = self.real_device_backend.provider
-        for my_backend in provider.backends():
-            if my_backend.status().operational and my_backend.name != backend_1.name:
-                backend_2 = my_backend
-                break
+        backend_2 = next(
+            (
+                my_backend
+                for my_backend in provider.backends()
+                if my_backend.status().operational
+                and my_backend.name != backend_1.name
+            ),
+            None,
+        )
         if not backend_2:
             raise SkipTest("Skipping test that requires multiple backends")
 
@@ -273,9 +276,7 @@ class TestIBMJob(IBMTestCase):
         for job in backend_jobs:
             self.assertTrue(
                 job.status() in JOB_FINAL_STATES,
-                "Job {} has status {} when it should be DONE, CANCELLED, or ERROR".format(
-                    job.job_id(), job.status()
-                ),
+                f"Job {job.job_id()} has status {job.status()} when it should be DONE, CANCELLED, or ERROR",
             )
 
     def test_retrieve_jobs_start_datetime(self):
@@ -294,9 +295,7 @@ class TestIBMJob(IBMTestCase):
             self.assertGreaterEqual(
                 job.creation_date(),
                 past_month_tz_aware,
-                "job {} creation date {} not within range".format(
-                    job.job_id(), job.creation_date()
-                ),
+                f"job {job.job_id()} creation date {job.creation_date()} not within range",
             )
 
     def test_retrieve_jobs_end_datetime(self):
@@ -315,9 +314,7 @@ class TestIBMJob(IBMTestCase):
             self.assertLessEqual(
                 job.creation_date(),
                 past_month_tz_aware,
-                "job {} creation date {} not within range".format(
-                    job.job_id(), job.creation_date()
-                ),
+                f"job {job.job_id()} creation date {job.creation_date()} not within range",
             )
 
     def test_retrieve_jobs_between_datetimes(self):
@@ -340,14 +337,10 @@ class TestIBMJob(IBMTestCase):
             self.assertTrue(job_list)
             for job in job_list:
                 self.assertTrue(
-                    (
-                        past_two_month_tz_aware
-                        <= job.creation_date()
-                        <= past_month_tz_aware
-                    ),
-                    "job {} creation date {} not within range".format(
-                        job.job_id(), job.creation_date()
-                    ),
+                    past_two_month_tz_aware
+                    <= job.creation_date()
+                    <= past_month_tz_aware,
+                    f"job {job.job_id()} creation date {job.creation_date()} not within range",
                 )
 
     def test_retrieve_jobs_order(self):

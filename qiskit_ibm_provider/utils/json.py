@@ -14,6 +14,7 @@
 
 """Utility functions for the runtime service."""
 
+
 import base64
 import copy
 import functools
@@ -61,7 +62,7 @@ from ..qpy import (
 
 _TERRA_VERSION = tuple(
     int(x)
-    for x in re.match(r"\d+\.\d+\.\d", _terra_version_string).group(0).split(".")[:3]
+    for x in re.match(r"\d+\.\d+\.\d", _terra_version_string)[0].split(".")[:3]
 )
 
 
@@ -181,7 +182,7 @@ def _cast_strings_keys_to_int(obj: Dict) -> Dict:
                 except ValueError:
                     pass
             _cast_strings_keys_to_int(val)
-        while len(int_keys) > 0:
+        while int_keys:
             key = int_keys.pop()
             obj[key] = obj[str(key)]
             obj.pop(str(key))
@@ -284,35 +285,37 @@ class RuntimeDecoder(json.JSONDecoder):
                 return dateutil.parser.parse(obj_val)
             if obj_type == "complex":
                 return obj_val[0] + 1j * obj_val[1]
-            if obj_type == "ndarray":
-                if isinstance(obj_val, list):
-                    return np.array(obj_val)
-                return _decode_and_deserialize(obj_val, np.load)
-            if obj_type == "set":
-                return set(obj_val)
-            if obj_type == "QuantumCircuit":
-                return _decode_and_deserialize(obj_val, load)[0]
-            if obj_type == "Parameter":
-                return _decode_and_deserialize(obj_val, _read_parameter, False)
-            if obj_type == "ParameterExpression":
-                return _decode_and_deserialize(
-                    obj_val, self.__read_parameter_expression, False  # type: ignore[arg-type]
-                )
             if obj_type == "Instruction":
                 # Standalone instructions are encoded as the sole instruction in a QPY serialized circuit
                 # to deserialize load qpy circuit and return first instruction object in that circuit.
                 circuit = _decode_and_deserialize(obj_val, load)[0]
                 return circuit.data[0][0]
-            if obj_type == "settings":
+            elif obj_type == "Parameter":
+                return _decode_and_deserialize(obj_val, _read_parameter, False)
+            elif obj_type == "ParameterExpression":
+                return _decode_and_deserialize(
+                    obj_val, self.__read_parameter_expression, False  # type: ignore[arg-type]
+                )
+            elif obj_type == "QuantumCircuit":
+                return _decode_and_deserialize(obj_val, load)[0]
+            elif obj_type == "Result":
+                return Result.from_dict(obj_val)
+            elif obj_type == "ndarray":
+                return (
+                    np.array(obj_val)
+                    if isinstance(obj_val, list)
+                    else _decode_and_deserialize(obj_val, np.load)
+                )
+            elif obj_type == "set":
+                return set(obj_val)
+            elif obj_type == "settings":
                 return _deserialize_from_settings(
                     mod_name=obj["__module__"],
                     class_name=obj["__class__"],
                     settings=_cast_strings_keys_to_int(obj_val),
                 )
-            if obj_type == "Result":
-                return Result.from_dict(obj_val)
-            if obj_type == "spmatrix":
+            elif obj_type == "spmatrix":
                 return _decode_and_deserialize(obj_val, scipy.sparse.load_npz, False)
-            if obj_type == "to_json":
+            elif obj_type == "to_json":
                 return obj_val
         return obj

@@ -36,7 +36,7 @@ class MockProxyServer:
             "pproxy",
             "-v",
             "-l",
-            "http://{}:{}".format(self.PROXY_IP_ADDRESS, self.PROXY_PORT),
+            f"http://{self.PROXY_IP_ADDRESS}:{self.PROXY_PORT}",
         ]
         self.proxy_process = subprocess.Popen(command, stdout=subprocess.PIPE)
         self._test_case.addCleanup(self.stop)

@@ -131,15 +131,15 @@ class AccountManager:
         """
         cls.migrate()
         if name:
-            saved_account = read_config(
+            if saved_account := read_config(
                 filename=cls._default_account_config_json_file, name=name
-            )
-            if not saved_account:
+            ):
+                return Account.from_saved_format(saved_account)
+
+            else:
                 raise AccountNotFoundError(
                     f"Account with the name {name} does not exist on disk."
                 )
-            return Account.from_saved_format(saved_account)
-
         channel_ = channel or cls._default_channel_type
         env_account = cls._from_env_variables(channel_)
         if env_account is not None:
@@ -186,17 +186,16 @@ class AccountManager:
                     config=value,
                     overwrite=False,
                 )
-            else:
-                if hasattr(value, "auth"):
-                    if value["auth"] == "legacy":
-                        value.update(channel="ibm_quantum")
-                    value.pop("auth", None)
-                    save_config(
-                        filename=cls._default_account_config_json_file,
-                        name=key,
-                        config=value,
-                        overwrite=True,
-                    )
+            elif hasattr(value, "auth"):
+                if value["auth"] == "legacy":
+                    value.update(channel="ibm_quantum")
+                value.pop("auth", None)
+                save_config(
+                    filename=cls._default_account_config_json_file,
+                    name=key,
+                    config=value,
+                    overwrite=True,
+                )
 
     @classmethod
     def _from_env_variables(cls, channel: Optional[ChannelType]) -> Optional[Account]:

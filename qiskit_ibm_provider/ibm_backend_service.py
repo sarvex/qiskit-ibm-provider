@@ -467,10 +467,11 @@ class IBMBackendService:
                 api=self._default_hgp._api_client,
             )
         try:
-            job = IBMCircuitJob(
-                backend=backend, api_client=self._default_hgp._api_client, **job_params
+            return IBMCircuitJob(
+                backend=backend,
+                api_client=self._default_hgp._api_client,
+                **job_params
             )
-            return job
         except TypeError as ex:
             if raise_error:
                 raise IBMBackendApiProtocolError(
@@ -521,7 +522,7 @@ class IBMBackendService:
             ]
             if "between" in cur_dt_filter and len(cur_dt_filter["between"]) > 0:
                 gt_list.append(cur_dt_filter.pop("between")[0])
-            gte_dt = max(gt_list) if gt_list else None
+            gte_dt = max(gt_list, default=None)
         if not lte_dt:
             lt_list = [
                 cur_dt_filter.pop(lt_op)
@@ -530,7 +531,7 @@ class IBMBackendService:
             ]
             if "between" in cur_dt_filter and len(cur_dt_filter["between"]) > 1:
                 lt_list.append(cur_dt_filter.pop("between")[1])
-            lte_dt = min(lt_list) if lt_list else None
+            lte_dt = min(lt_list, default=None)
         new_dt_filter = {}  # type: Dict[str, Union[str, List[str]]]
         if gte_dt and lte_dt:
             new_dt_filter["between"] = [gte_dt, lte_dt]
@@ -578,9 +579,7 @@ class IBMBackendService:
                 status = JobStatus[status.upper()]
             except KeyError:
                 raise IBMBackendValueError(
-                    '"{}" is not a valid status value. Valid values are {}'.format(
-                        status, ", ".join(job_status.name for job_status in JobStatus)
-                    )
+                    f'"{status}" is not a valid status value. Valid values are {", ".join(job_status.name for job_status in JobStatus)}'
                 ) from None
         _status_filter = {}  # type: Dict[str, Any]
         if status == JobStatus.INITIALIZING:
@@ -607,9 +606,7 @@ class IBMBackendService:
             _status_filter = {"status": {"regexp": "^ERROR"}}
         else:
             raise IBMBackendValueError(
-                '"{}" is not a valid status value. Valid values are {}'.format(
-                    status, ", ".join(job_status.name for job_status in JobStatus)
-                )
+                f'"{status}" is not a valid status value. Valid values are {", ".join(job_status.name for job_status in JobStatus)}'
             )
         return _status_filter
 
@@ -648,11 +645,8 @@ class IBMBackendService:
         except ApiError as ex:
             if "Error code: 3250." in str(ex):
                 raise IBMJobNotFoundError(f"Job {job_id} not found.")
-            raise IBMBackendApiError(
-                "Failed to get job {}: {}".format(job_id, str(ex))
-            ) from ex
-        job = self._restore_circuit_job(job_info, raise_error=True, legacy=legacy)
-        return job
+            raise IBMBackendApiError(f"Failed to get job {job_id}: {str(ex)}") from ex
+        return self._restore_circuit_job(job_info, raise_error=True, legacy=legacy)
 
     def _set_backend_config(
         self, backend_name: str, instance: Optional[str] = None

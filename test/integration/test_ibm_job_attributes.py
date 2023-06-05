@@ -130,11 +130,8 @@ class TestIBMJobAttributes(IBMTestCase):
         )
 
         self.assertTrue(
-            (start_datetime <= job.creation_date() <= end_datetime),
-            "job creation date {} is not "
-            "between the start date time {} and end date time {}".format(
-                job.creation_date(), start_datetime, end_datetime
-            ),
+            start_datetime <= job.creation_date() <= end_datetime,
+            f"job creation date {job.creation_date()} is not between the start date time {start_datetime} and end date time {end_datetime}",
         )
 
     def test_time_per_step(self):
@@ -153,11 +150,8 @@ class TestIBMJobAttributes(IBMTestCase):
         self.assertTrue(job.time_per_step())
         for step, time_data in job.time_per_step().items():
             self.assertTrue(
-                (start_datetime <= time_data <= end_datetime),
-                'job time step "{}={}" is not '
-                "between the start date time {} and end date time {}".format(
-                    step, time_data, start_datetime, end_datetime
-                ),
+                start_datetime <= time_data <= end_datetime,
+                f'job time step "{step}={time_data}" is not between the start date time {start_datetime} and end date time {end_datetime}',
             )
 
         rjob = self.dependencies.provider.backend.retrieve_job(job.job_id())
@@ -203,8 +197,8 @@ class TestIBMJobAttributes(IBMTestCase):
                 queue_info,
                 job.queue_position(),
             )
-            msg = "Job {} is queued but has no ".format(job.job_id())
-            self.assertIsNotNone(queue_info, msg + "queue info.")
+            msg = f"Job {job.job_id()} is queued but has no "
+            self.assertIsNotNone(queue_info, f"{msg}queue info.")
             for attr, value in queue_info.__dict__.items():
                 self.assertIsNotNone(value, msg + attr)
             self.assertTrue(
@@ -216,7 +210,7 @@ class TestIBMJobAttributes(IBMTestCase):
                         queue_info.project_priority,
                     ]
                 ),
-                "Unexpected queue info {} for job {}".format(queue_info, job.job_id()),
+                f"Unexpected queue info {queue_info} for job {job.job_id()}",
             )
 
             self.assertTrue(queue_info.format())
@@ -292,20 +286,18 @@ class TestIBMJobAttributes(IBMTestCase):
         """Test using job tags."""
         # Use a unique tag.
         job_tags = [
-            uuid.uuid4().hex[0:16],
-            uuid.uuid4().hex[0:16],
-            uuid.uuid4().hex[0:16],
+            uuid.uuid4().hex[:16],
+            uuid.uuid4().hex[:16],
+            uuid.uuid4().hex[:16],
         ]
         job = self.sim_backend.run(self.bell, job_tags=job_tags)
 
-        no_rjobs_tags = [job_tags[0:1] + ["phantom_tags"], ["phantom_tag"]]
+        no_rjobs_tags = [job_tags[:1] + ["phantom_tags"], ["phantom_tag"]]
         for tags in no_rjobs_tags:
             rjobs = self.dependencies.provider.backend.jobs(
                 job_tags=tags, start_datetime=self.last_week
             )
-            self.assertEqual(
-                len(rjobs), 0, "Expected job {}, got {}".format(job.job_id(), rjobs)
-            )
+            self.assertEqual(len(rjobs), 0, f"Expected job {job.job_id()}, got {rjobs}")
 
         has_rjobs_tags = [job_tags, job_tags[1:3]]
         for tags in has_rjobs_tags:
@@ -314,9 +306,7 @@ class TestIBMJobAttributes(IBMTestCase):
                     job_tags=tags,
                     start_datetime=self.last_week,
                 )
-                self.assertEqual(
-                    len(rjobs), 1, "Expected job {}, got {}".format(job.job_id(), rjobs)
-                )
+                self.assertEqual(len(rjobs), 1, f"Expected job {job.job_id()}, got {rjobs}")
                 self.assertEqual(rjobs[0].job_id(), job.job_id())
                 # TODO check why this sometimes fails
                 # self.assertEqual(set(rjobs[0].tags()), set(job_tags))
@@ -327,10 +317,8 @@ class TestIBMJobAttributes(IBMTestCase):
         job = self.sim_backend.run(self.bell, job_tags=initial_job_tags)
 
         tags_to_replace_subtests = [
-            [],  # empty tags.
-            list(
-                "{}_new_tag_{}".format(uuid.uuid4().hex[:5], i) for i in range(2)
-            ),  # unique tags.
+            [],
+            [f"{uuid.uuid4().hex[:5]}_new_tag_{i}" for i in range(2)],
             initial_job_tags + ["foo"],
         ]
         for tags_to_replace in tags_to_replace_subtests:

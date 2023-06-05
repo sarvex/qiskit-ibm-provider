@@ -127,9 +127,8 @@ def _get_backends(provider):
     backends = []
     n_qubits = [1, 5]
     for n_qb in n_qubits:
-        filtered_backends = provider.backends(
+        if filtered_backends := provider.backends(
             operational=True, simulator=False, n_qubits=n_qb
-        )
-        if filtered_backends:
+        ):
             backends.append(filtered_backends[0])
     return backends

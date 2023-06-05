@@ -46,7 +46,7 @@ def _sns_to_plotly(
 
     for k in range(pl_entries):
         clr = list(map(np.uint8, np.array(cmap(k * hgt)[:3]) * 255))
-        pl_colorscale.append([k * hgt, "rgb" + str((clr[0], clr[1], clr[2]))])
+        pl_colorscale.append([k * hgt, f"rgb{(clr[0], clr[1], clr[2])}"])
 
     return pl_colorscale
 

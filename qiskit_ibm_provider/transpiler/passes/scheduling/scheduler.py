@@ -146,8 +146,7 @@ class BaseDynamicCircuitAnalysis(TransformationPass):
 
         # Duration is 0 as we do not schedule across terminator
         t1 = t0  # pylint: disable=invalid-name
-        self._update_bit_times(node, t0, t1)
-
+        self._update_bit_times(node, t1, t1)
         for block in node.op.blocks:
             self._control_flow_block = True
 
@@ -265,11 +264,11 @@ class BaseDynamicCircuitAnalysis(TransformationPass):
         self._current_block_measures_has_reset = False
 
     def _current_block_measure_qargs(self) -> Set[Qubit]:
-        return set(
+        return {
             qarg
             for measure in self._current_block_measures
             for qarg in self._map_qubits(measure)
-        )
+        }
 
     def _check_flush_measures(self, node: DAGNode) -> None:
         if self._current_block_measure_qargs() & set(self._map_qubits(node)):
