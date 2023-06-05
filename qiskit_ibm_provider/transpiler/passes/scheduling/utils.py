@@ -104,16 +104,12 @@ def block_order_op_nodes(dag: DAGCircuit) -> Generator[DAGOpNode, None, None]:
         to_push = new_to_push
 
         # First emit the measurements which will feed
-        for node in yield_measures:
-            yield node
+        yield from yield_measures
         # Into the block triggers we will emit.
-        for node in yield_block_triggers:
-            yield node
-
+        yield from yield_block_triggers
         # We're at the last block and emit the final nodes
         if not block_break:
-            for node in to_push:
-                yield node
+            yield from to_push
             break
         # Otherwise emit the final nodes
         # Add to the front of the list to be processed next

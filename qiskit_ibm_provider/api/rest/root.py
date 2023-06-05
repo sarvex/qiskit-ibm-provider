@@ -102,9 +102,7 @@ class Api(RestAdapterBase):
             JSON response of user information.
         """
         url = self.get_url("user_info")
-        response = self.session.get(url).json()
-
-        return response
+        return self.session.get(url).json()
 
     def jobs(
         self,
@@ -127,13 +125,9 @@ class Api(RestAdapterBase):
         url = self.get_url("jobs")
         order = "DESC" if descending else "ASC"
 
-        query = {
-            "order": "creationDate " + order,
-            "limit": limit,
-            "skip": skip,
-        }
+        query = {"order": f"creationDate {order}", "limit": limit, "skip": skip}
         if extra_filter:
-            query.update(extra_filter)
+            query |= extra_filter
 
         if logger.getEffectiveLevel() is logging.DEBUG:
             logger.debug(

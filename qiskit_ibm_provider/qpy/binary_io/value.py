@@ -159,9 +159,7 @@ def _read_parameter_expression(file_obj):  # type: ignore[no-untyped-def]
         elif elem_key == type_keys.Value.PARAMETER_EXPRESSION:
             value = common.data_from_binary(binary_data, _read_parameter_expression)
         else:
-            raise exceptions.QpyError(
-                "Invalid parameter expression map type: %s" % elem_key
-            )
+            raise exceptions.QpyError(f"Invalid parameter expression map type: {elem_key}")
         symbol_map[symbol] = value
 
     return ParameterExpression(symbol_map, expr)
@@ -200,7 +198,7 @@ def _read_parameter_expression_v3(file_obj, vectors):  # type: ignore[no-untyped
             symbol = _read_parameter_vec(file_obj, vectors)
         else:
             raise exceptions.QpyError(
-                "Invalid parameter expression map type: %s" % symbol_key
+                f"Invalid parameter expression map type: {symbol_key}"
             )
 
         elem_key = type_keys.Value(elem_data.type)
@@ -218,9 +216,7 @@ def _read_parameter_expression_v3(file_obj, vectors):  # type: ignore[no-untyped
                 binary_data, _read_parameter_expression_v3, vectors=vectors
             )
         else:
-            raise exceptions.QpyError(
-                "Invalid parameter expression map type: %s" % elem_key
-            )
+            raise exceptions.QpyError(f"Invalid parameter expression map type: {elem_key}")
         symbol_map[symbol] = value
 
     return ParameterExpression(symbol_map, expr)

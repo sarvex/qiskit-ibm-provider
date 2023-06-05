@@ -63,7 +63,7 @@ def backend_widget(backend: Union[IBMBackend, FakeBackend]) -> None:
                 color="#002d9c",
                 children=[
                     vue.ToolbarTitle(
-                        children=["{} @ ({})".format(backend, instance)],
+                        children=[f"{backend} @ ({instance})"],
                         style_="color:white",
                     )
                 ],

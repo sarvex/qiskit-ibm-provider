@@ -85,9 +85,7 @@ class SubJob:
         """
         if self._qobj:
             return self._qobj
-        if self.job:
-            return self.job._get_qobj()
-        return None
+        return self.job._get_qobj() if self.job else None
 
     @property
     def job(self) -> Optional[IBMCircuitJob]:
@@ -97,9 +95,7 @@ class SubJob:
             The corresponding ``IBMCircuitJob`` instance, or ``None`` if job
             has not been submitted.
         """
-        if self.future and not self.future.done():
-            return None
-        return self._job
+        return None if self.future and not self.future.done() else self._job
 
     @job.setter
     def job(self, job: IBMCircuitJob) -> None:
@@ -117,9 +113,7 @@ class SubJob:
         Returns:
             Job submit errors, if any.
         """
-        if self.future and not self.future.done():
-            return None
-        return self._submit_error
+        return None if self.future and not self.future.done() else self._submit_error
 
     @submit_error.setter
     def submit_error(self, error: Exception) -> None:

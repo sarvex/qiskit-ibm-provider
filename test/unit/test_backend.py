@@ -187,14 +187,12 @@ class TestBackend(IBMTestCase):
         # backend is not faulty because no faulty parameters given
         backend = self._create_faulty_backend(model_backend=FakeManila())
 
-        circuits = []
         circ = QuantumCircuit(2, 2)
         circ.h(0)
         circ.measure(0, 0)
         with circ.if_test((0, False)):
             circ.x(1)
-        circuits.append(circ)
-
+        circuits = [circ]
         circ = QuantumCircuit(3, 2)
         with circ.for_loop(range(4)):
             circ.h(0)

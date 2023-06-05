@@ -139,8 +139,7 @@ class TestBackendFilters(IBMTestCase):
         backend_names = [backend.name for backend in backends]
 
         for config in configs.values():
-            backend = self.dependencies.provider.backend._create_backend_obj(
+            if backend := self.dependencies.provider.backend._create_backend_obj(
                 config, instance=self.dependencies.instance
-            )
-            if backend:
+            ):
                 self.assertTrue(backend.name in backend_names)

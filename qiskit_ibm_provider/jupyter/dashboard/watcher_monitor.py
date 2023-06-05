@@ -65,24 +65,20 @@ def _job_checker(job: IBMJob, status: JobStatus, watcher: "IBMDashboard") -> Non
 
                     update_info = (
                         job.job_id(),
-                        status.name + " ({})".format(queue_pos),
+                        f"{status.name} ({queue_pos})",
                         est_time,
                         status.value,
                     )
 
                     watcher.update_single_job(update_info)
-                    if queue_pos is not None:
-                        interval = max(queue_pos, 2)
-                    else:
-                        interval = 2
+                    interval = max(queue_pos, 2) if queue_pos is not None else 2
                     prev_queue_pos = queue_pos
 
             elif status.name != prev_status_name:
                 msg = status.name
                 if msg == "RUNNING":
-                    job_mode = job.scheduling_mode()
-                    if job_mode:
-                        msg += " [{}]".format(job_mode[0].upper())
+                    if job_mode := job.scheduling_mode():
+                        msg += f" [{job_mode[0].upper()}]"
 
                 update_info = (job.job_id(), msg, 0, status.value)
 
@@ -90,7 +86,6 @@ def _job_checker(job: IBMJob, status: JobStatus, watcher: "IBMDashboard") -> Non
                 interval = 2
                 prev_status_name = status.name
 
-        # pylint: disable=broad-except
         except Exception:
             exception_count += 1
             if exception_count == 5:

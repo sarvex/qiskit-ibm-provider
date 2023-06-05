@@ -50,9 +50,7 @@ def _text_checker(
         msg = status.value
 
         if status.name == "QUEUED":
-            queue_info = job.queue_info()
-
-            if queue_info:
+            if queue_info := job.queue_info():
                 if queue_info.estimated_start_time:
                     est_time = queue_info.estimated_start_time
                     time_str = duration_difference(est_time)
@@ -70,18 +68,16 @@ def _text_checker(
                     interval = 2
             elif not _interval_set:
                 interval = max(job.queue_position(), 2)
-        else:
-            if not _interval_set:
-                interval = 2
+        elif not _interval_set:
+            interval = 2
 
         if status.name == "RUNNING":
             msg = "RUNNING"
-            job_mode = job.scheduling_mode()
-            if job_mode:
-                msg += " - {}".format(job_mode)
+            if job_mode := job.scheduling_mode():
+                msg += f" - {job_mode}"
 
         elif status.name == "ERROR":
-            msg = "ERROR - {}".format(job.error_message())
+            msg = f"ERROR - {job.error_message()}"
 
         # Adjust length of message so there are no artifacts
         if len(msg) < msg_len:

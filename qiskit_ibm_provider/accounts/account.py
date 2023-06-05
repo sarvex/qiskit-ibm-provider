@@ -121,14 +121,13 @@ class Account:
         """Assert that the channel parameter is valid."""
         if channel != "ibm_quantum":
             raise InvalidAccountError(
-                f"Invalid `channel` value. Expected "
-                f"{'ibm_quantum'}, got '{channel}'."
+                f"Invalid `channel` value. Expected ibm_quantum, got '{channel}'."
             )
 
     @staticmethod
     def _assert_valid_token(token: str) -> None:
         """Assert that the token is valid."""
-        if not (isinstance(token, str) and len(token) > 0):
+        if not isinstance(token, str) or not token:
             raise InvalidAccountError(
                 f"Invalid `token` value. Expected a non-empty string, got '{token}'."
             )

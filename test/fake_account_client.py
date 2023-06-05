@@ -167,10 +167,10 @@ class BaseFakeJob:
         time_per_step = {}
         timestamp = self._creation_date
         for api_stat in API_STATUS_TO_INT:  # pylint: disable=consider-using-dict-items
-            if API_STATUS_TO_INT[status] > API_STATUS_TO_INT[api_stat]:
-                time_per_step[api_stat.value] = timestamp.isoformat()
-                timestamp += timedelta(seconds=30)
-            elif status == api_stat:
+            if (
+                API_STATUS_TO_INT[status] > API_STATUS_TO_INT[api_stat]
+                or status == api_stat
+            ):
                 time_per_step[api_stat.value] = timestamp.isoformat()
                 timestamp += timedelta(seconds=30)
         data["time_per_step"] = time_per_step
@@ -444,9 +444,11 @@ class BaseFakeAccountClient:
             status_data = job.status_data()
             status = ApiJobStatus(status_data["status"])
             if _kwargs.get("status_queue", None):
-                data = {"status": status.value}
                 if status is ApiJobStatus.QUEUED:
-                    data["infoQueue"] = {"status": "PENDING_IN_QUEUE", "position": 1}
+                    data = {
+                        "status": status.value,
+                        "infoQueue": {"status": "PENDING_IN_QUEUE", "position": 1},
+                    }
                 _kwargs["status_queue"].put(status_data)
         return self.job_status(job_id)
 

@@ -100,10 +100,7 @@ def iplot_gate_map(
             margin={"t": 30, "l": 0, "r": 0, "b": 0},
         )
 
-        if as_widget:
-            return PlotlyWidget(fig)
-        return PlotlyFigure(fig)
-
+        return PlotlyWidget(fig) if as_widget else PlotlyFigure(fig)
     offset = 0
     if cmap:
         if n_qubits in [14, 15, 16]:
@@ -160,8 +157,8 @@ def iplot_gate_map(
                     y_mid = y_start
 
                 elif x_start == x_end:
-                    y_end = (y_end - y_start) / 2 + y_start
                     x_mid = x_start
+                    y_end = (y_end - y_start) / 2 + y_start
                     y_mid = y_end
 
                 else:
@@ -169,18 +166,17 @@ def iplot_gate_map(
                     y_end = (y_end - y_start) / 2 + y_start
                     x_mid = x_end
                     y_mid = y_end
+            elif y_start == y_end:
+                x_mid = (x_end - x_start) / 2 + x_start
+                y_mid = y_end
+
+            elif x_start == x_end:
+                x_mid = x_end
+                y_mid = (y_end - y_start) / 2 + y_start
+
             else:
-                if y_start == y_end:
-                    x_mid = (x_end - x_start) / 2 + x_start
-                    y_mid = y_end
-
-                elif x_start == x_end:
-                    x_mid = x_end
-                    y_mid = (y_end - y_start) / 2 + y_start
-
-                else:
-                    x_mid = (x_end - x_start) / 2 + x_start
-                    y_mid = (y_end - y_start) / 2 + y_start
+                x_mid = (x_end - x_start) / 2 + x_start
+                y_mid = (y_end - y_start) / 2 + y_start
 
             fig.add_trace(
                 go.Scatter(
@@ -194,11 +190,8 @@ def iplot_gate_map(
 
     # Add the qubits themselves
     if qubit_labels is None:
-        qubit_text = []
         qubit_str = "<b>Qubit {}"
-        for num in range(n_qubits):
-            qubit_text.append(qubit_str.format(num))
-
+        qubit_text = [qubit_str.format(num) for num in range(n_qubits)]
     if n_qubits > 50:
         if qubit_size is None:
             qubit_size = 20
@@ -220,9 +213,7 @@ def iplot_gate_map(
     )
 
     fig.update_xaxes(visible=False)
-    _range = None
-    if offset:
-        _range = [-3.5, 0.5]
+    _range = [-3.5, 0.5] if offset else None
     fig.update_yaxes(visible=False, range=_range)
 
     fig.update_layout(
@@ -234,6 +225,4 @@ def iplot_gate_map(
         margin={"t": 30, "l": 0, "r": 0, "b": 0},
     )
 
-    if as_widget:
-        return PlotlyWidget(fig)
-    return PlotlyFigure(fig)
+    return PlotlyWidget(fig) if as_widget else PlotlyFigure(fig)

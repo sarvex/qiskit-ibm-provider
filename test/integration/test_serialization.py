@@ -212,7 +212,7 @@ def _find_potential_encoded(data: Any, c_key: str, tally: set) -> None:
             _find_potential_encoded(item, c_key, tally)
     elif isinstance(data, dict):
         for key, value in data.items():
-            full_key = c_key + "." + str(key) if c_key else str(key)
+            full_key = f"{c_key}.{str(key)}" if c_key else str(key)
             _find_potential_encoded(value, full_key, tally)
 
 

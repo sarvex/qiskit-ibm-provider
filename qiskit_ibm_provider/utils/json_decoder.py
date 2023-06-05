@@ -119,7 +119,7 @@ def target_from_server_data(
     if hasattr(configuration, "dt"):
         in_data["dt"] = configuration.dt
     if hasattr(configuration, "timing_constraints"):
-        in_data.update(configuration.timing_constraints)
+        in_data |= configuration.timing_constraints
 
     # Create instruction property placeholder from backend configuration
     supported_instructions = set(getattr(configuration, "supported_instructions", []))
@@ -170,9 +170,11 @@ def target_from_server_data(
     if properties:
         qubit_properties = list(map(_decode_qubit_property, properties["qubits"]))
         in_data["qubit_properties"] = qubit_properties
-        faulty_qubits = set(
-            q for q, prop in enumerate(qubit_properties) if not prop.operational
-        )
+        faulty_qubits = {
+            q
+            for q, prop in enumerate(qubit_properties)
+            if not prop.operational
+        }
 
         for gate_spec in map(GateSchema.from_dict, properties["gates"]):
             name = gate_spec.gate
@@ -326,7 +328,7 @@ def _to_complex(value: Union[List[float], complex]) -> complex:
     elif isinstance(value, complex):
         return value
 
-    raise TypeError("{} is not in a valid complex number format.".format(value))
+    raise TypeError(f"{value} is not in a valid complex number format.")
 
 
 def _decode_pulse_library_item(pulse_library_item: Dict) -> None:
@@ -392,7 +394,7 @@ def _decode_instruction_property(
     for param in gate_spec.parameters:
         if param.name == "gate_error":
             in_data["error"] = param.value
-        if param.name == "gate_length":
+        elif param.name == "gate_length":
             in_data["duration"] = apply_prefix(value=param.value, unit=param.unit)
         if param.name == "operational" and not param.value:
             operational = bool(param.value)
@@ -413,7 +415,7 @@ def _decode_measure_property(qubit_specs: List[Dict]) -> InstructionProperties:
         name = spec["name"]
         if name == "readout_error":
             in_data["error"] = spec["value"]
-        if name == "readout_length":
+        elif name == "readout_length":
             in_data["duration"] = apply_prefix(
                 value=spec["value"], unit=spec.get("unit", None)
             )

@@ -106,10 +106,7 @@ class BlockBasePadder(TransformationPass):
 
         # Trivial wire map at the top-level
         wire_map = {wire: wire for wire in dag.wires}
-        # Top-level dag is the entry block
-        new_dag = self._visit_block(dag, wire_map)
-
-        return new_dag
+        return self._visit_block(dag, wire_map)
 
     def _init_run(self, dag: DAGCircuit) -> None:
         """Setup for initial run."""
@@ -403,13 +400,10 @@ class BlockBasePadder(TransformationPass):
         ):
             return False
 
-        # Fast path contents are limited to gates and delays
-        for block in node.op.blocks:
-            if not all(
-                isinstance(inst.operation, (Gate, Delay)) for inst in block.data
-            ):
-                return False
-        return True
+        return all(
+            all(isinstance(inst.operation, (Gate, Delay)) for inst in block.data)
+            for block in node.op.blocks
+        )
 
     def _visit_control_flow_op(self, node: DAGNode) -> None:
         """Visit a control-flow node to pad."""

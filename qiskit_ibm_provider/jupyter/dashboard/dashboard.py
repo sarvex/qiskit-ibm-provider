@@ -178,19 +178,16 @@ class IBMDashboard(Subscriber):
             job_wid = self.jobs[ind]
             # update status
             if update_info[1] == "DONE":
-                stat = "<font style='color:#34BC6E'>{}</font>".format(update_info[1])
+                stat = f"<font style='color:#34BC6E'>{update_info[1]}</font>"
             elif update_info[1] == "ERROR":
-                stat = "<font style='color:#DC267F'>{}</font>".format(update_info[1])
+                stat = f"<font style='color:#DC267F'>{update_info[1]}</font>"
             elif update_info[1] == "CANCELLED":
-                stat = "<font style='color:#FFB000'>{}</font>".format(update_info[1])
+                stat = f"<font style='color:#FFB000'>{update_info[1]}</font>"
             else:
                 stat = update_info[1]
             job_wid.children[3].value = stat
             # update estimated start time.
-            if update_info[2] == 0:
-                est_start = "-"
-            else:
-                est_start = str(update_info[2])
+            est_start = "-" if update_info[2] == 0 else str(update_info[2])
             job_wid.children[4].value = est_start
 
     def cancel_job(self, job_id: str) -> None:

@@ -49,8 +49,7 @@ RE_DEVICES_ENDPOINT = re.compile(r"^(.*/devices/)([^/}]{2,})(.*)$", re.IGNORECAS
 def _get_client_header() -> str:
     """Return the client version."""
     try:
-        client_header = "qiskit/" + pkg_resources.get_distribution("qiskit").version
-        return client_header
+        return "qiskit/" + pkg_resources.get_distribution("qiskit").version
     except Exception:  # pylint: disable=broad-except
         pass
 
@@ -209,10 +208,8 @@ class RetrySession(Session):
         """
         client_app_header = CLIENT_APPLICATION
 
-        # Append custom header to the end if specified
-        custom_header = os.getenv(CUSTOM_HEADER_ENV_VAR)
-        if custom_header:
-            client_app_header += "/" + custom_header
+        if custom_header := os.getenv(CUSTOM_HEADER_ENV_VAR):
+            client_app_header += f"/{custom_header}"
 
         self.headers.update({"X-Qx-Client-Application": client_app_header})
 
@@ -247,13 +244,13 @@ class RetrySession(Session):
             # Explicitly pass `None` as the `access_token` param, disabling it.
             params = kwargs.get("params", {})
             params.update({"access_token": None})
-            kwargs.update({"params": params})
+            kwargs["params"] = params
         else:
             final_url = self.base_url + url
 
         # Add a timeout to the connection for non-proxy connections.
         if not self.proxies and "timeout" not in kwargs:
-            kwargs.update({"timeout": self._timeout})
+            kwargs["timeout"] = self._timeout
 
         headers = self.headers.copy()
         headers.update(kwargs.pop("headers", {}))
@@ -271,9 +268,7 @@ class RetrySession(Session):
                 status_code = ex.response.status_code
                 try:
                     error_json = ex.response.json()["error"]
-                    message += ". {}, Error code: {}.".format(
-                        error_json["message"], error_json["code"]
-                    )
+                    message += f'. {error_json["message"]}, Error code: {error_json["code"]}.'
                     logger.debug(
                         "Response uber-trace-id: %s",
                         ex.response.headers["uber-trace-id"],
@@ -318,9 +313,7 @@ class RetrySession(Session):
                     request_data_to_log = ""
                     if filtered_url in ("/devices/.../properties", "/Jobs"):
                         # Log filtered request data for these endpoints.
-                        request_data_to_log = "Request Data: {}.".format(
-                            filter_data(request_data)
-                        )
+                        request_data_to_log = f"Request Data: {filter_data(request_data)}."
                     logger.debug(
                         "Endpoint: %s. Method: %s. %s",
                         filtered_url,
@@ -361,10 +354,7 @@ class RetrySession(Session):
             return False
         if "objectstorage" in endpoint_url:
             return False
-        if "bookings" in endpoint_url:
-            return False
-
-        return True
+        return "bookings" not in endpoint_url
 
     def __getstate__(self) -> Dict:
         """Overwrite Session's getstate to include all attributes."""

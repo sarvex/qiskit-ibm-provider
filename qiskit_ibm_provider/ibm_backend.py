@@ -231,11 +231,9 @@ class IBMBackend(Backend):
         does not yet exist on IBMBackend class.
         """
         # Prevent recursion since these properties are accessed within __getattr__
-        if name in ["_properties", "_defaults", "_target"]:
+        if name in {"_properties", "_defaults", "_target"}:
             raise AttributeError(
-                "'{}' object has no attribute '{}'".format(
-                    self.__class__.__name__, name
-                )
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
             )
         try:
             return super().__getattribute__(name)
@@ -247,9 +245,7 @@ class IBMBackend(Backend):
             return self._configuration.__getattribute__(name)
         except AttributeError:
             raise AttributeError(
-                "'{}' object has no attribute '{}'".format(
-                    self.__class__.__name__, name
-                )
+                f"'{self.__class__.__name__}' object has no attribute '{name}'"
             )
 
     def _get_target(
@@ -447,7 +443,7 @@ class IBMBackend(Backend):
                 "'use_measure_esp' is unset or set to 'False'."
             )
         actually_dynamic = are_circuits_dynamic(circuits)
-        if dynamic is False and actually_dynamic:
+        if not dynamic and actually_dynamic:
             warnings.warn(
                 "Parameter 'dynamic' is False, but the circuit contains dynamic constructs."
             )
@@ -464,10 +460,7 @@ class IBMBackend(Backend):
 
         program_id = str(run_config.get("program_id", ""))
         if not program_id:
-            if dynamic:
-                program_id = QASM3RUNNERPROGRAMID
-            else:
-                program_id = QOBJRUNNERPROGRAMID
+            program_id = QASM3RUNNERPROGRAMID if dynamic else QOBJRUNNERPROGRAMID
         else:
             run_config.pop("program_id", None)
 
@@ -533,7 +526,7 @@ class IBMBackend(Backend):
                 job_tags=job_tags,
             )
         except RequestsApiError as ex:
-            raise IBMBackendApiError("Error submitting job: {}".format(str(ex))) from ex
+            raise IBMBackendApiError(f"Error submitting job: {str(ex)}") from ex
         try:
             job_id = response["id"]
             job = IBMCircuitJob(
@@ -546,8 +539,7 @@ class IBMBackend(Backend):
         except TypeError as err:
             logger.debug("Invalid job data received: %s", response)
             raise IBMBackendApiProtocolError(
-                "Unexpected return value received from the server "
-                "when submitting job: {}".format(str(err))
+                f"Unexpected return value received from the server when submitting job: {str(err)}"
             ) from err
         Publisher().publish("ibm.job.start", job)
         return job
@@ -608,8 +600,7 @@ class IBMBackend(Backend):
             return None
         if not isinstance(refresh, bool):
             raise TypeError(
-                "The 'refresh' argument needs to be a boolean. "
-                "{} is of type {}".format(refresh, type(refresh))
+                f"The 'refresh' argument needs to be a boolean. {refresh} is of type {type(refresh)}"
             )
         if datetime and not isinstance(datetime, python_datetime):
             raise TypeError("'{}' is not of type 'datetime'.")
@@ -649,8 +640,7 @@ class IBMBackend(Backend):
             return BackendStatus.from_dict(api_status)
         except TypeError as ex:
             raise IBMBackendApiProtocolError(
-                "Unexpected return value received from the server when "
-                "getting backend status: {}".format(str(ex))
+                f"Unexpected return value received from the server when getting backend status: {str(ex)}"
             ) from ex
 
     def defaults(self, refresh: bool = False) -> Optional[PulseDefaults]:
@@ -668,10 +658,9 @@ class IBMBackend(Backend):
             The backend pulse defaults or ``None`` if the backend does not support pulse.
         """
         if refresh or self._defaults is None:
-            api_defaults = self.provider._runtime_client.backend_pulse_defaults(
+            if api_defaults := self.provider._runtime_client.backend_pulse_defaults(
                 self.name
-            )
-            if api_defaults:
+            ):
                 self._defaults = defaults_from_server_data(api_defaults)
             else:
                 self._defaults = None
@@ -735,7 +724,7 @@ class IBMBackend(Backend):
         return self._configuration.control(qubits=qubits)
 
     def __repr__(self) -> str:
-        return "<{}('{}')>".format(self.__class__.__name__, self.name)
+        return f"<{self.__class__.__name__}('{self.name}')>"
 
     def _deprecate_id_instruction(
         self, circuits: List[Union[QuantumCircuit, Schedule]]
@@ -773,7 +762,7 @@ class IBMBackend(Backend):
         if not circuit_has_id:
             return circuits
         if not self.id_warning_issued:
-            if id_support and delay_support:
+            if id_support:
                 warnings.warn(
                     "Support for the 'id' instruction has been deprecated "
                     "from IBM hardware backends. Any 'id' instructions "
@@ -913,12 +902,10 @@ class IBMRetiredBackend(IBMBackend):
         """Return the backend status."""
         return self._status
 
-    def run(self, *args: Any, **kwargs: Any) -> None:  # type: ignore[override]
+    def run(self, *args: Any, **kwargs: Any) -> None:    # type: ignore[override]
         """Run a Circuit."""
         # pylint: disable=arguments-differ
-        raise IBMBackendError(
-            "This backend ({}) is no longer available.".format(self.name)
-        )
+        raise IBMBackendError(f"This backend ({self.name}) is no longer available.")
 
     @classmethod
     def from_name(

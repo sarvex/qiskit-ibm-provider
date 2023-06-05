@@ -38,9 +38,7 @@ def setup_test_logging(logger: logging.Logger, filename: str) -> None:
         filename: Name of the output file, if log to file is enabled.
     """
     # Set up formatter.
-    log_fmt = "{}.%(funcName)s:%(levelname)s:%(asctime)s:" " %(message)s".format(
-        logger.name
-    )
+    log_fmt = f"{logger.name}.%(funcName)s:%(levelname)s:%(asctime)s: %(message)s"
     formatter = logging.Formatter(log_fmt)
 
     if os.getenv("STREAM_LOG", "true").lower() == "true":
@@ -135,10 +133,9 @@ def cancel_job(job: IBMJob, verify: bool = False) -> bool:
             if cancelled:
                 if verify:
                     status = job.status()
-                    assert status is JobStatus.CANCELLED, (
-                        "cancel() was successful for job {} but its "
-                        "status is {}.".format(job.job_id(), status)
-                    )
+                    assert (
+                        status is JobStatus.CANCELLED
+                    ), f"cancel() was successful for job {job.job_id()} but its status is {status}."
                 break
         except JobError:
             pass
@@ -158,8 +155,7 @@ def submit_job_bad_shots(backend: IBMBackend) -> IBMJob:
     qobj = bell_in_qobj(backend=backend)
     # Modify the number of shots to be an invalid amount.
     qobj.config.shots = backend.configuration().max_shots + 10000
-    job_to_fail = backend._submit_job(qobj)
-    return job_to_fail
+    return backend._submit_job(qobj)
 
 
 def submit_job_one_bad_instr(backend: IBMBackend) -> IBMJob:
@@ -178,8 +174,7 @@ def submit_job_one_bad_instr(backend: IBMBackend) -> IBMJob:
     else:
         qobj = assemble([qc_new] * 2, backend=backend)
     qobj.experiments[1].instructions[1].name = "bad_instruction"
-    job = backend._submit_job(qobj)
-    return job
+    return backend._submit_job(qobj)
 
 
 def submit_and_cancel(backend: IBMBackend) -> IBMJob:
@@ -208,8 +203,7 @@ def get_pulse_schedule(backend: IBMBackend) -> Schedule:
     measure = inst_map.get("measure", range(config.n_qubits)) << x_pulse.duration
     ground_sched = measure
     excited_sched = x_pulse | measure
-    schedules = [ground_sched, excited_sched]
-    return schedules
+    return [ground_sched, excited_sched]
 
 
 def get_hgp(qe_token: str, qe_url: str, default: bool = True) -> HubGroupProject:

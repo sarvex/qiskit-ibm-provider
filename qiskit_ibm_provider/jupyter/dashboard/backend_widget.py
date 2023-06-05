@@ -164,11 +164,7 @@ def make_backend_widget(backend_item: BackendWithProviders) -> wid.HBox:
                         if param["value"] != 1.0:
                             sum_cx_err += param["value"]
                             num_cx += 1
-        if num_cx:
-            avg_cx_err = round(sum_cx_err / (num_cx) * 100, 2)
-        else:
-            avg_cx_err = 100.0
-
+        avg_cx_err = round(sum_cx_err / (num_cx) * 100, 2) if num_cx else 100.0
     avg_meas_err = 0
     for qub in props["qubits"]:
         for item in qub:
@@ -188,9 +184,9 @@ def make_backend_widget(backend_item: BackendWithProviders) -> wid.HBox:
     meas_str = "<font size='3' face='monospace'>{merr}</font><font size='2'> %</font>"
     meas_wid = wid.HTML(value=meas_str.format(merr=avg_meas_err))
 
-    cx_str = "<font size='3' face='monospace'>{cx_err}</font><font size='2'> %</font>"
     if n_qubits != 1:
         cx_label = wid.HTML(value="<font size='2'>Avg. CX Err.:</font>")
+        cx_str = "<font size='3' face='monospace'>{cx_err}</font><font size='2'> %</font>"
         cx_wid = wid.HTML(value=cx_str.format(cx_err=avg_cx_err))
 
     quant_vol = "None"

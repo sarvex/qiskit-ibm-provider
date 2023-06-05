@@ -93,9 +93,7 @@ class no_file(ContextDecorator):
 
     def side_effect(self, filename_):
         """Return False for the specified file."""
-        if filename_ == self.filename:
-            return False
-        return self.isfile_original(filename_)
+        return False if filename_ == self.filename else self.isfile_original(filename_)
 
 
 class temporary_account_config_file(ContextDecorator):

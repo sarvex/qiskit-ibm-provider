@@ -41,13 +41,12 @@ def build_error_report(results: List[Dict[str, Any]]) -> str:
     Returns:
         The error report.
     """
-    error_list = []
-    for index, result in enumerate(results):
-        if not result["success"]:
-            error_list.append("Experiment {}: {}".format(index, result["status"]))
-
-    error_report = "The following experiments failed:\n{}".format("\n".join(error_list))
-    return error_report
+    error_list = [
+        f'Experiment {index}: {result["status"]}'
+        for index, result in enumerate(results)
+        if not result["success"]
+    ]
+    return "The following experiments failed:\n{}".format("\n".join(error_list))
 
 
 def get_cancel_status(cancel_response: Dict[str, Any]) -> bool:

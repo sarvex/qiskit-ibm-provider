@@ -93,9 +93,7 @@ class TestIBMCompositeJob(IBMTestCase):
         """Test having circuits split into multiple jobs."""
         max_circs = self.fake_backend.configuration().max_experiments
 
-        circs = []
-        for _ in range(max_circs + 2):
-            circs.append(self._qc)
+        circs = [self._qc for _ in range(max_circs + 2)]
         job_set = self.fake_backend.run(circs)
         result = job_set.result()
 
@@ -206,9 +204,7 @@ class TestIBMCompositeJob(IBMTestCase):
     @skip("Until CompositeJob is fixed")
     def test_job_circuits(self):
         """Test job circuits."""
-        circs = []
-        for _ in range(3):
-            circs.append(random_circuit(num_qubits=2, depth=3, measure=True))
+        circs = [random_circuit(num_qubits=2, depth=3, measure=True) for _ in range(3)]
         circs_copied = circs.copy()
         job_set = self.fake_backend.run(circs, max_circuits_per_job=1)
         job_circuits = job_set.circuits()
@@ -432,7 +428,7 @@ class TestIBMCompositeJob(IBMTestCase):
         )
         job_set.block_for_submit()
         tag_prefix = uuid.uuid4().hex
-        replacement_tags = ["{}_new_tag_{}".format(tag_prefix, i) for i in range(2)]
+        replacement_tags = [f"{tag_prefix}_new_tag_{i}" for i in range(2)]
         job_set.update_tags(new_tags=replacement_tags)
         for job in job_set.sub_jobs():
             job.refresh()
@@ -662,7 +658,7 @@ class TestIBMCompositeJob(IBMTestCase):
     def test_job_error(self):
         """Test retrieving an invalid job."""
         with self.assertRaises(IBMJobNotFoundError):
-            self.fake_provider.backend.job(IBM_COMPOSITE_JOB_ID_PREFIX + "1234")
+            self.fake_provider.backend.job(f"{IBM_COMPOSITE_JOB_ID_PREFIX}1234")
 
     @skip("Until CompositeJob is fixed")
     def test_missing_required_fields(self):
@@ -752,10 +748,11 @@ class TestIBMCompositeJob(IBMTestCase):
     def test_retry_failed_submit(self):
         """Test retrying failed job submit."""
         max_circs = self.fake_backend.configuration().max_experiments
-        circs = []
         count = 3
-        for _ in range(max_circs * (count - 1) + 1):
-            circs.append(random_circuit(num_qubits=2, depth=3, measure=True))
+        circs = [
+            random_circuit(num_qubits=2, depth=3, measure=True)
+            for _ in range(max_circs * (count - 1) + 1)
+        ]
         sub_tests = [[0], [1, 2], [0, 2]]
 
         for failed_index in sub_tests:
@@ -787,9 +784,10 @@ class TestIBMCompositeJob(IBMTestCase):
         """Test retrying failed jobs."""
         max_circs = 3
         num_jobs = 3
-        circs = []
-        for _ in range(max_circs * (num_jobs - 1) + 1):
-            circs.append(random_circuit(num_qubits=2, depth=3, measure=True))
+        circs = [
+            random_circuit(num_qubits=2, depth=3, measure=True)
+            for _ in range(max_circs * (num_jobs - 1) + 1)
+        ]
         sub_tests = [
             [FailedFakeJob, BaseFakeJob, BaseFakeJob],
             [BaseFakeJob, FailedFakeJob, CancelableFakeJob],
@@ -831,9 +829,10 @@ class TestIBMCompositeJob(IBMTestCase):
         """Test retrieving a single sub job."""
         max_circs = 3
         num_jobs = 3
-        circs = []
-        for _ in range(max_circs * (num_jobs - 1) + 1):
-            circs.append(random_circuit(num_qubits=2, depth=3, measure=True))
+        circs = [
+            random_circuit(num_qubits=2, depth=3, measure=True)
+            for _ in range(max_circs * (num_jobs - 1) + 1)
+        ]
         job_set = self.fake_backend.run(circs, max_circuits_per_job=max_circs)
         job_set.block_for_submit()
         circ_idx = random.randint(0, len(circs) - 1)
@@ -862,9 +861,10 @@ class TestIBMCompositeJobIntegration(IBMTestCase):
         circs_counts = [3, 4]
         for count in circs_counts:
             with self.subTest(count=count):
-                circs = []
-                for _ in range(count):
-                    circs.append(random_circuit(num_qubits=2, depth=3, measure=True))
+                circs = [
+                    random_circuit(num_qubits=2, depth=3, measure=True)
+                    for _ in range(count)
+                ]
                 circs = transpile(circs, backend=self.sim_backend)
                 job_set = self.sim_backend.run(
                     circs, max_circuits_per_job=2, job_tags=tags

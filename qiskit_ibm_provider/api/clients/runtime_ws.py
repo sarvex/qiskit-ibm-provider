@@ -66,7 +66,7 @@ class RuntimeWebsocketClient(BaseWebsocketClient):
         Raises:
             WebsocketError: If a websocket error occurred.
         """
-        url = "{}/stream/jobs/{}".format(self._websocket_url, self._job_id)
+        url = f"{self._websocket_url}/stream/jobs/{self._job_id}"
         self.stream(url=url, retries=max_retries, backoff_factor=backoff_factor)
 
     def _handle_stream_iteration(self) -> None:

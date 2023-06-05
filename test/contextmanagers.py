@@ -90,9 +90,7 @@ class no_file(ContextDecorator):
 
     def side_effect(self, filename_):
         """Return False for the specified file."""
-        if filename_ == self.filename:
-            return False
-        return self.isfile_original(filename_)
+        return False if filename_ == self.filename else self.isfile_original(filename_)
 
 
 def _mock_initialize_hgps(self: Any, preferences: Optional[Dict] = None) -> None:
@@ -101,8 +99,6 @@ def _mock_initialize_hgps(self: Any, preferences: Optional[Dict] = None) -> None
     hgp: Any = {}
     self._hgp = hgp
     self._hgps = {}
-    if preferences:
-        pass
         # credentials.preferences = preferences.get(credentials.unique_id(), {})
 
 

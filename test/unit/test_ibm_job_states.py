@@ -429,9 +429,11 @@ class BaseFakeAPI:
         self._state = 0
         self.config = {"hub": None, "group": None, "project": None}
         if self._can_cancel:
-            self.config.update(
-                {"hub": "test-hub", "group": "test-group", "project": "test-project"}
-            )
+            self.config |= {
+                "hub": "test-hub",
+                "group": "test-group",
+                "project": "test-project",
+            }
 
     def job_get(self, job_id):
         """Return information about a job."""
@@ -490,9 +492,7 @@ class BaseFakeAPI:
             elapsed_time = time.time() - start_time
             timeout = _kwargs.get("timeout", None)
             if timeout is not None and elapsed_time >= timeout:
-                raise UserTimeoutExceededError(
-                    "Timeout while waiting for job {}".format(job_id)
-                )
+                raise UserTimeoutExceededError(f"Timeout while waiting for job {job_id}")
             time.sleep(5)
             status_response = self.job_status(job_id)
         return status_response
@@ -526,9 +526,7 @@ class BaseFakeAPI:
         return None
 
     def job_type(self, job_id: str) -> str:
-        if job_id[0] != "c" and len(job_id) == 24:
-            return "IQX"
-        return "RUNTIME"
+        return "IQX" if job_id[0] != "c" and len(job_id) == 24 else "RUNTIME"
 
 
 class UnknownStatusAPI(BaseFakeAPI):
